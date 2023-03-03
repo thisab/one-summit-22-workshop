@@ -1,0 +1,22 @@
+---
+- name: "Update apt"
+  become: yes
+  apt:
+     update_cache: yes
+     upgrade: yes
+     cache_valid_time: 3600
+
+- name: "Install needed packages"
+  become: yes
+  apt:
+    name:
+    - curl
+    - apt-transport-https
+    - ca-certificates
+    - net-tools
+    - vim
+    - ifupdown
+    - unzip
+    - software-properties-common
+    - gnupg-agent
+    state: present

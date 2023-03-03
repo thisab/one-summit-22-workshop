@@ -3,6 +3,17 @@
 ## SPDX-License-Identifier: Apache-2.0
 
 ---
+- name: Make the Swap inactive
+  become: yes
+  command: swapoff -a
+
+- name: Remove Swap entry from /etc/fstab
+  become: yes
+  lineinfile:
+    dest: /etc/fstab
+    regexp: swap
+    state: absent
+
 - name: Add Google official GPG key
   become: yes
   apt_key:
@@ -24,3 +35,13 @@
     - kubeadm={{ kubectl_version }}-00
     - kubectl={{ kubectl_version }}-00
     update_cache: yes
+
+- name: Prevent k8s packages from being upgraded
+  become: yes
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+   - kubelet
+   - kubeadm
+   - kubectl

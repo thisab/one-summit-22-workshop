@@ -15,10 +15,10 @@
 
   roles:
     
+    - { role: apt, tags: apt}
     - { role: docker, tags: docker}
     - { role: kubectl, tags: kubectl}
     - { role: kpt, tags: kpt}
-    - { role: cni, tags: cni }
     - { role: bash, tags: bash }
     - { role: tree, tags: tree}
     - { role: nephio/install, tags: nephio}
