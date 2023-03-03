@@ -16,3 +16,13 @@
 - name: ensure docker and dependencies are installed
   become: true
   apt: name=docker-ce update_cache=yes
+
+- name: Remove file (delete file) config.toml
+  ansible.builtin.file:
+    path: /etc/containerd/config.toml
+    state: absent
+
+- name: Restart service containerd, in all cases
+  ansible.builtin.service:
+    name: containerd
+    state: restarted
