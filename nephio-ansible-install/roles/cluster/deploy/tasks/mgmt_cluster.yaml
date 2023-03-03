@@ -5,14 +5,14 @@
 - name: Copy cluster config template
   template:
     src: "{{ role_path }}/templates/cluster-config.yaml.j2"
-    dest: "{{ tmp_directory }}/{{ item.key }}-cluster-config.yaml"
+    dest: "{{ tmp_directory }}/mgmt-cluster-config.yaml"
     mode: 0644
   tags:
     - create
 
 - name: Add extra port mapping for mgmt cluster ingress
   shell: |
-    cat <<EOF >> {{ tmp_directory }}/{{ item.key }}-cluster-config.yaml
+    cat <<EOF >> {{ tmp_directory }}/mgmt-cluster-config.yaml
         kubeadmConfigPatches:
         - |
           kind: InitConfiguration
@@ -24,13 +24,54 @@
           hostPort: 7007
           protocol: TCP
     EOF
-  when: item.key == "mgmt"
+
+- name: Check admin.conf file exists.
+  become: yes
+  stat:
+    path: /root/cluster_initialized.txt
+  register: k8s_up
+
+- name: Destroy_k8s
+  become: yes
+  command: kubeadm reset --force
+  when:  k8s_up.stat.exists
+
+- name: remove the test file
+  become: yes
+  file:
+    path: /root/cluster_initialized.txt
+    state: absent
+  when: k8s_up.stat.exists
 
 - name: Start_K8s
-  shell: kubeadm init --pod-network-cidr={{ item.value.pod_subnet }} --service-cidr={{ item.value.svc_subnet }} >> cluster_initialized.txt
+  shell: kubeadm init --pod-network-cidr={{ item.pod_subnet }} --service-cidr={{ item.svc_subnet }} >> cluster_initialized.txt
   become: yes
   become_user: root
   args:
     chdir: $HOME
     creates: /root/cluster_initialized.txt
-  when: item.key == "mgmt"
+
+- name: create .kube directory
+  file:
+    path: $HOME/.kube
+    state: directory
+    mode: 0755
+
+- name: Check admin.conf file exists.
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: k8s_conf
+
+- name: copy admin.conf to user's kube config
+  become: yes
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/{{ ansible_ssh_user }}/.kube/config
+    remote_src: yes
+    owner: "{{ ansible_ssh_user }}"
+  when: k8s_conf.stat.exists
+
+- name: Wait for k8s to come up
+  pause:
+    minutes: 1
+

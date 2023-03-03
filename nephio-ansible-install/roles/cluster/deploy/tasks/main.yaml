@@ -20,4 +20,6 @@
 
 - name: deploy clusters
   include_tasks: mgmt_cluster.yaml
-  with_dict: "{{ clusters }}"
+  with_items: 
+    - "{{ clusters.mgmt }}"
+    
