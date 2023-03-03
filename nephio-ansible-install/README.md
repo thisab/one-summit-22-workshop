@@ -2,24 +2,6 @@
 
 ## installation
 
-This repository provides the artifacts to install a Nephio environment using ansible to experiment with Nephio following [nephio ONE summit 2022 workshop](https://github.com/nephio-project/one-summit-22-workshop). The installation creates kind clusters, GitHub repositories and the manifests to get a base Nephio environment up an running.
-
-The installation assumes a VM is created with the following characteristics:
-
-- ubuntu 22.04LTS -> this is tested right now
-- 32G RAM, 8 vcpu -> we can change this based on the amount of kind clusters we need
-- 50GB disk (default 10GB disk on GCE is too small, 50GB is tested)
-- SSH access with a SSH key is setup + username
-
-The creation of the VM is right now out of scope, but we can see what we can do going forward.
-Also we assume right now the ansible playbook is executed remote from the VM. We can see if people want to use a different approach going forward.
-
-In a local environment clone the repository in a local environment
-
-```bash
-git clone https://github.com/nephio-project/one-summit-22-workshop.git
-cd one-summit-22-workshop/nephio-ansible-install
-```
 
 The installation requires an inventory file that is tailored to your enviornment. The ansible.config assumes the inventory file is located in inventory/nephio.yaml within the cloned environment. Create an inventory directory and the nephio.yaml file within the inventory directory
 
@@ -82,23 +64,18 @@ Some customizations are required to tailor the installation to your environment.
 
 Note: You can choose between using remote GitHub repositories or local gitea repositories for your Nephio environment by setting either the GitHub variables or the gitea variables.
 
-To start running ansible playbooks an ansible environment is required. Below is an example how to install ansible using a virtual environment. The repository scripts rely on the ansible galaxy community collection
+The repository scripts rely on the ansible galaxy community collection
 
-```python
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install ansible
-pip install pygithub
-ansible-galaxy collection install community.general
-ansible-galaxy collection install community.docker # required for gitea
+```
+   sudo apt install python3-github ansible sshpass
+   ansible-galaxy collection install community.general
 ```
 
 ## deploy nephio environment
 
 Now that the environment is up an running we can install the Nephio environment
 
-First we create some prerequisites, which installs kubectl, kind, kpt, cni and setup the bash environment
+First we create some prerequisites, which installs kubectl, kind, kpt, cni and setup the bash environment (use -u <user> -K <password> to provide a distinct user for SSH and sudo password)
 
 ```bash
 ansible-playbook playbooks/install-prereq.yaml
