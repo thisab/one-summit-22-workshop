@@ -3,23 +3,24 @@
 ## SPDX-License-Identifier: Apache-2.0
 
 ---
-- name: Download kubectl binary
-  ansible.builtin.get_url:
-    url: "https://storage.googleapis.com/kubernetes-release/release/v{{ kubectl_version }}/bin/{{ host_os }}/{{ host_arch }}/kubectl"
-    checksum: "{{ kubectl_checksum_binary }}"
-    dest: "{{ tmp_directory }}"
-    mode: 0600
-  tags:
-    - kubectl
+- name: Add Google official GPG key
+  become: yes
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
 
-- name: Copy kubectl binary to destination directory
-  become: true
-  ansible.builtin.copy:
-    src: "{{ tmp_directory }}/{{ item }}"
-    dest: "{{ bin_directory }}/{{ item }}"
-    mode: "0755"
-    owner: "root"
-    group: "root"
-    remote_src: true
-  with_items:
-    - kubectl
+- name: Add Kubernetes Official Repository
+  become: yes
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main 
+    state: present
+    filename: kubernetes
+
+- name: "Kubernetes packets installation"
+  become: yes
+  apt:
+    name:
+    - kubelet={{ kubectl_version }}-00
+    - kubeadm={{ kubectl_version }}-00
+    - kubectl={{ kubectl_version }}-00
+    update_cache: yes

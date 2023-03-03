@@ -19,5 +19,5 @@
     - sysctl fs.inotify.max_user_instances=512
 
 - name: deploy clusters
-  include_tasks: cluster_files.yaml
+  include_tasks: mgmt_cluster.yaml
   with_dict: "{{ clusters }}"
